@@ -108,6 +108,7 @@ venv.bak/
 .idea/
 snips_model/
 atis_model/
+data/
 
 .DS_Store
 cached*

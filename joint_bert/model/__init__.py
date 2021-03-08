@@ -1,0 +1,3 @@
+from joint_bert.model.modeling_jointbert import JointBERT
+from joint_bert.model.modeling_jointdistilbert import JointDistilBERT
+from joint_bert.model.modeling_jointalbert import JointAlbert

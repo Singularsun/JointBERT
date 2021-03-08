@@ -1,8 +1,8 @@
-import torch
 import torch.nn as nn
-from transformers.modeling_distilbert import DistilBertPreTrainedModel, DistilBertModel, DistilBertConfig
 from torchcrf import CRF
-from .module import IntentClassifier, SlotClassifier
+from transformers.modeling_distilbert import DistilBertPreTrainedModel, DistilBertModel
+
+from joint_bert.model.module import IntentClassifier, SlotClassifier
 
 
 class JointDistilBERT(DistilBertPreTrainedModel):
@@ -11,7 +11,8 @@ class JointDistilBERT(DistilBertPreTrainedModel):
         self.args = args
         self.num_intent_labels = len(intent_label_lst)
         self.num_slot_labels = len(slot_label_lst)
-        self.distilbert = DistilBertModel(config=config)  # Load pretrained bert
+        # Load pretrained bert
+        self.distilbert = DistilBertModel(config=config)
 
         self.intent_classifier = IntentClassifier(config.hidden_size, self.num_intent_labels, args.dropout_rate)
         self.slot_classifier = SlotClassifier(config.hidden_size, self.num_slot_labels, args.dropout_rate)
@@ -20,7 +21,8 @@ class JointDistilBERT(DistilBertPreTrainedModel):
             self.crf = CRF(num_tags=self.num_slot_labels, batch_first=True)
 
     def forward(self, input_ids, attention_mask, intent_label_ids, slot_labels_ids):
-        outputs = self.distilbert(input_ids, attention_mask=attention_mask)  # last-layer hidden-state, (hidden_states), (attentions)
+        # last-layer hidden-state, (hidden_states), (attentions)
+        outputs = self.distilbert(input_ids, attention_mask=attention_mask)
         sequence_output = outputs[0]
         pooled_output = sequence_output[:, 0]  # [CLS]
 
@@ -42,7 +44,8 @@ class JointDistilBERT(DistilBertPreTrainedModel):
         if slot_labels_ids is not None:
             if self.args.use_crf:
                 slot_loss = self.crf(slot_logits, slot_labels_ids, mask=attention_mask.byte(), reduction='mean')
-                slot_loss = -1 * slot_loss  # negative log-likelihood
+                # negative log-likelihood
+                slot_loss = -1 * slot_loss
             else:
                 slot_loss_fct = nn.CrossEntropyLoss(ignore_index=self.args.ignore_index)
                 # Only keep active parts of the loss
@@ -54,9 +57,10 @@ class JointDistilBERT(DistilBertPreTrainedModel):
                 else:
                     slot_loss = slot_loss_fct(slot_logits.view(-1, self.num_slot_labels), slot_labels_ids.view(-1))
             total_loss += self.args.slot_loss_coef * slot_loss
-
-        outputs = ((intent_logits, slot_logits),) + outputs[1:]  # add hidden states and attention if they are here
+        # add hidden states and attention if they are here
+        outputs = ((intent_logits, slot_logits),) + outputs[1:]
 
         outputs = (total_loss,) + outputs
-
-        return outputs  # (loss), logits, (hidden_states), (attentions) # Logits is a tuple of intent and slot logits
+        # (loss), logits, (hidden_states), (attentions)
+        # Logits is a tuple of intent and slot logits
+        return outputs

@@ -9,7 +9,7 @@ from seqeval.metrics import precision_score, recall_score, f1_score
 from transformers import BertConfig, DistilBertConfig, AlbertConfig
 from transformers import BertTokenizer, DistilBertTokenizer, AlbertTokenizer
 
-from model import JointBERT, JointDistilBERT, JointAlbert
+from joint_bert.model import JointBERT, JointDistilBERT, JointAlbert
 
 MODEL_CLASSES = {
     'bert': (BertConfig, JointBERT, BertTokenizer),
@@ -25,11 +25,13 @@ MODEL_PATH_MAP = {
 
 
 def get_intent_labels(args):
-    return [label.strip() for label in open(os.path.join(args.data_dir, args.task, args.intent_label_file), 'r', encoding='utf-8')]
+    return [label.strip() for label in
+            open(os.path.join(args.data_dir, args.task, args.intent_label_file), 'r', encoding='utf-8')]
 
 
 def get_slot_labels(args):
-    return [label.strip() for label in open(os.path.join(args.data_dir, args.task, args.slot_label_file), 'r', encoding='utf-8')]
+    return [label.strip() for label in
+            open(os.path.join(args.data_dir, args.task, args.slot_label_file), 'r', encoding='utf-8')]
 
 
 def load_tokenizer(args):

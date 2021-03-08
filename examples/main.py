@@ -1,8 +1,8 @@
 import argparse
 
-from trainer import Trainer
-from utils import init_logger, load_tokenizer, read_prediction_text, set_seed, MODEL_CLASSES, MODEL_PATH_MAP
 from data_loader import load_and_cache_examples
+from joint_bert.trainer import Trainer
+from utils import init_logger, load_tokenizer, set_seed, MODEL_CLASSES, MODEL_PATH_MAP
 
 
 def main(args):
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     parser.add_argument("--slot_label_file", default="slot_label.txt", type=str, help="Slot Label file")
 
     parser.add_argument("--model_type", default="bert", type=str, help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
+    parser.add_argument("--model_name_or_path", default=None, type=str, help="model path")
 
     parser.add_argument('--seed', type=int, default=1234, help="random seed for initialization")
     parser.add_argument("--train_batch_size", default=32, type=int, help="Batch size for training.")
@@ -67,6 +68,6 @@ if __name__ == '__main__':
     parser.add_argument("--slot_pad_label", default="PAD", type=str, help="Pad token for slot label pad (to be ignore when calculate loss)")
 
     args = parser.parse_args()
-
-    args.model_name_or_path = MODEL_PATH_MAP[args.model_type]
+    if not args.model_name_or_path:
+        args.model_name_or_path = MODEL_PATH_MAP[args.model_type]
     main(args)
